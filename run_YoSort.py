@@ -253,7 +253,7 @@ if __name__ == '__main__':
                         default='yolov5/weights/ship.pt', help='model.pt path')
     # file/folder, 0 for webcam
     parser.add_argument('--source', type=str,
-                        default='rtsp://admin:SMUwm_007@183.192.69.170:7502/id=1', help='source')
+                        default='', help='source')
     parser.add_argument('--output', type=str, default='inference/output',
                         help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=640,
