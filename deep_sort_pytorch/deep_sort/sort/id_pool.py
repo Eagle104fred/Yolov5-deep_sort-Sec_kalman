@@ -1,7 +1,7 @@
 class IdPool:
     def __init__(self):
         self.id_dict = {}
-        self.hp=250
+        self.hp=100
     def init(self):#检测这个id是否存活
         for i in range(1,9999):
             if(i in self.id_dict.keys()):
@@ -14,7 +14,7 @@ class IdPool:
         for k,v in self.id_dict.items():
             self.id_dict[k]=v-1
             if(v<=0):
-                print("release id :" + k)
+                print("release id :",k)
                 del self.id_dict[k]
 
 
