@@ -92,6 +92,7 @@ class Tracker:
         for t in self.tracks:
             if not t.is_deleted():
                 temp.append(t)
+                print("update id:",t.track_id)
                 self._id_pool.update(t.track_id)
             else:
                 print("box has been delect!",t.track_id)
