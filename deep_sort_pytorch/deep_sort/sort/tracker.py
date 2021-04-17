@@ -47,9 +47,10 @@ class Tracker:
         self.kf = kalman_filter.KalmanFilter()
         self.tracks = []
         #self._next_id = 1
-        self._next_id=self._id_pool.init()
+
         self.label=[]
         self._id_pool=IdPool()
+        self._next_id = self._id_pool.init()
 
 
     def predict(self):#卡尔曼

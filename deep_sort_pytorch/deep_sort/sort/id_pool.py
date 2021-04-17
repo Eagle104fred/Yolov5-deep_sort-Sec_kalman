@@ -1,4 +1,3 @@
-
 class IdPool:
     def __init__(self):
         self.id_dict = {}
