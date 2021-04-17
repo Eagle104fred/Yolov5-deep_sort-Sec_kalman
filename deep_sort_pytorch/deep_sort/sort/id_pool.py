@@ -1,12 +1,13 @@
 class IdPool:
     def __init__(self):
         self.id_dict = {}
+        self.hp=100
     def init(self):#检测这个id是否存活
         for i in range(1,9999):
             if(i in self.id_dict.keys()):
                 continue
             else:
-                self.id_dict[i]=500
+                self.id_dict[i]=hp
                 return i
         return 0
     def updat_times(self):
@@ -19,4 +20,4 @@ class IdPool:
 
 
     def update(self,id):
-        self.id_dict[id] = 500
+        self.id_dict[id] = hp
