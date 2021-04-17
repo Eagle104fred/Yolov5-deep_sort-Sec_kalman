@@ -85,14 +85,15 @@ class Tracker:
             self.tracks[track_idx].mark_missed()
         for detection_idx in unmatched_detections:#添加新的匹配框
             self._initiate_track(detections[detection_idx])
-        #self.tracks = [t for t in self.tracks if not t.is_deleted()]
+        #self.tracks = [t for t in self.tracks if not t.is_deleted()]#所有框更新完毕
         temp = []
         for t in self.tracks:
+
             if not t.is_deleted():
                 temp.append(t)
-            else:
-                self._id_pool.id_delect(t.track_id)
+                self._id_pool.update(t.track_id)
         self.tracks=temp
+        self._id_pool.updat_times()
 
         # Update distance metric.
         active_targets = [t.track_id for t in self.tracks if t.is_confirmed()]
@@ -151,7 +152,7 @@ class Tracker:
         self.tracks.append(Track(
             mean, covariance, self._next_id, self.n_init, self.max_age,detection.label,
             detection.feature))
-        self._next_id=self._id_pool.id_init()
+        self._next_id=self._id_pool.init()
         # try:
         #     self._next_id += 1  # 新建id号
         # except:
