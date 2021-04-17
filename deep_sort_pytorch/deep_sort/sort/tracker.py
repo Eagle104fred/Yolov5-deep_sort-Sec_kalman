@@ -90,10 +90,10 @@ class Tracker:
         #self.tracks = [t for t in self.tracks if not t.is_deleted()]#所有框更新完毕
         temp = []
         for t in self.tracks:
-
             if not t.is_deleted():
                 temp.append(t)
                 self._id_pool.update(t.track_id)
+
         self.tracks=temp
         self._id_pool.updat_times()
 
