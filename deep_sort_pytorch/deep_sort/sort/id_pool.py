@@ -7,7 +7,7 @@ class IdPool:
             if(i in self.id_dict.keys()):
                 continue
             else:
-                self.id_dict[i]=hp
+                self.id_dict[i]=self.hp
                 return i
         return 0
     def updat_times(self):
@@ -20,4 +20,4 @@ class IdPool:
 
 
     def update(self,id):
-        self.id_dict[id] = hp
+        self.id_dict[id] = self.hp
