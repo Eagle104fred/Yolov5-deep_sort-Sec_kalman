@@ -1,7 +1,7 @@
 class IdPool:
     def __init__(self):
         self.id_dict = {}
-        self.hp=100
+        self.hp=250
     def init(self):#检测这个id是否存活
         for i in range(1,9999):
             if(i in self.id_dict.keys()):
