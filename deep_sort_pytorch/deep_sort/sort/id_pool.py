@@ -7,6 +7,7 @@ class IdPool:
             if(i in self.id_dict.keys()):
                 continue
             else:
+                self.id_dict[i]=500
                 return i
         return 0
     def updat_times(self):

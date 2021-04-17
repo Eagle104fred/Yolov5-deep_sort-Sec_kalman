@@ -152,6 +152,7 @@ class Tracker:
         self.tracks.append(Track(
             mean, covariance, self._next_id, self.n_init, self.max_age,detection.label,
             detection.feature))
+        self._next_id+=1
         self._next_id=self._id_pool.init()
         # try:
         #     self._next_id += 1  # 新建id号
