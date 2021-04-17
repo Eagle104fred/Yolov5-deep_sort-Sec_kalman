@@ -94,7 +94,8 @@ class Tracker:
                 temp.append(t)
                 self._id_pool.update(t.track_id)
             else:
-                print("box has been delect!")
+                print("box has been delect!",t.track_id)
+
 
         self.tracks=temp
         self._id_pool.updat_times()
