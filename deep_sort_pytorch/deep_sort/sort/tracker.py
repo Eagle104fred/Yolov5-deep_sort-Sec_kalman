@@ -5,6 +5,7 @@ from . import kalman_filter
 from . import linear_assignment
 from . import iou_matching
 from .track import Track
+from .id_pool import IdPool
 
 
 class Tracker:
@@ -47,6 +48,8 @@ class Tracker:
         self.tracks = []
         self._next_id = 1
         self.label=[]
+        self._id_pool=IdPool()
+
 
     def predict(self):#卡尔曼
         """Propagate track state distributions one time step forward.
@@ -75,14 +78,21 @@ class Tracker:
             self._match(detections)#框匹配函数
 
         # Update track set.
-        for track_idx, detection_idx in matches:
+        for track_idx, detection_idx in matches:#更新找到的框
             self.tracks[track_idx].update(
                 self.kf, detections[detection_idx])
         for track_idx in unmatched_tracks:#失去匹配的框
             self.tracks[track_idx].mark_missed()
         for detection_idx in unmatched_detections:#添加新的匹配框
             self._initiate_track(detections[detection_idx])
-        self.tracks = [t for t in self.tracks if not t.is_deleted()]
+        #self.tracks = [t for t in self.tracks if not t.is_deleted()]
+        temp = []
+        for t in self.tracks:
+            if not t.is_deleted():
+                temp.append(t)
+            else:
+                self._id_pool.id_delect(t.track_id)
+        self.tracks=temp
 
         # Update distance metric.
         active_targets = [t.track_id for t in self.tracks if t.is_confirmed()]
@@ -141,7 +151,15 @@ class Tracker:
         self.tracks.append(Track(
             mean, covariance, self._next_id, self.n_init, self.max_age,detection.label,
             detection.feature))
-        try:
-            self._next_id += 1  # 新建id号
-        except:
-            print("id initiate error!")
+        self._next_id=self._id_pool.id_init()
+        # try:
+        #     self._next_id += 1  # 新建id号
+        # except:
+        #     print("id initiate error!")
+
+
+
+
+
+
+
