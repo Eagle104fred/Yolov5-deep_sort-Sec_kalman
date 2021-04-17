@@ -13,7 +13,9 @@ class IdPool:
         for k,v in self.id_dict.item():
             v-=1
             if(v<=0):
+                print("release id :" + k)
                 del self.id_dict[k]
+
 
     def update(self,id):
         self.id_dict[id] = 500

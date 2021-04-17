@@ -191,7 +191,7 @@ def detect(opt, save_img=False):
                     class_str = f'{names[int(cls)]}'
                     conf_str = f'{conf:.2f}'
                     confint=conf*100
-                    print(class_str + ':' + conf_str)
+                    #print(class_str + ':' + conf_str)
                     bbox_xywh.append(obj)
                     confs.append([conf.item()])
                     labels.append([int(cls),int(confint)])#增加的conf和cls
@@ -230,7 +230,7 @@ def detect(opt, save_img=False):
                 deepsort.increment_ages()
 
             # Print time (inference + NMS)
-            print('%sDone. (%.3fs)' % (s, t2 - t1))
+            #print('%sDone. (%.3fs)' % (s, t2 - t1))
 
             # Stream results
             if view_img:
