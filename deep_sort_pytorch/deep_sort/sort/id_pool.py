@@ -4,7 +4,7 @@ class IdPool:
         self.id_dict = {}
     def id_init(self):#检测这个id是否存活
         for i in range(1,9999):
-            if(self.id_dict[i]):
+            if(i in self.id_dict.keys()):
                 continue
             else:
                 self.id_dict[i]=None
