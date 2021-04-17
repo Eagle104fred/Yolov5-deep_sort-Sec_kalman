@@ -13,7 +13,7 @@ class IdPool:
     def updat_times(self):
         for k in self.id_dict.keys():
             self.id_dict[k]-=1
-            if(v<=0):
+            if(self.id_dict[k]<=0):
                 print("release id :",k)
                 del self.id_dict[k]
 
