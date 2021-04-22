@@ -1,7 +1,8 @@
 from socket import *
+import hashlib
 
 class UDP_connect:
-    def __init__(self):
+    def __init__(self,rtspUrl):
         self.udp_socket = socket(AF_INET, SOCK_DGRAM)
         self.server_addr = ('192.168.1.107', 8080)
         # dest_addr = ('192.168.1.114', 8080)
@@ -15,6 +16,16 @@ class UDP_connect:
         self.message_head = 'ShipTrack'+'\n'
         self.message_tail = 'END'+'\n'
         self.send_message = ""
+
+        self.md5_message = ""
+        self.CountRtspMD5(rtspUrl)
+
+    def CountRtspMD5(self,rtspUrl):
+        md5_rtspurl = hashlib.md5()
+        md5_rtspurl.update(rtspUrl);
+        self.md5_message = md5_rtspurl.hexdigest()[:8]
+    def SetMD5(self):
+        self.send_message+=self.md5_message
     def SetUdpHead(self):
         self.send_message +=self.message_head
     def CleanMessage(self):
