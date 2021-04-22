@@ -21,16 +21,12 @@ class UDP_connect:
         self.CountRtspMD5(rtspUrl)
 
     def CountRtspMD5(self,rtspUrl):
-        md5_rtspurl = hashlib.md5()
-        md5_rtspurl.update(rtspUrl);
+        md5_rtspurl = hashlib.md5(rtspUrl.encode(encoding='utf-8')).hexdigest()
         self.md5_message = md5_rtspurl.hexdigest()[:8]+ '|'
-
 
     def SetUdpHead(self):
         self.send_message +=self.message_head
         self.send_message += self.md5_message
-
-
 
     def CleanMessage(self):
         self.send_message=""
