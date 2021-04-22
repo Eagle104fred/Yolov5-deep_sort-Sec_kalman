@@ -13,7 +13,7 @@ class UDP_connect:
         cam_user = "admin"
         cam_psw = "SMUwm_007"
 
-        self.message_head = 'ShipTrack'+'\n'
+        self.message_head = 'ShipTrack'+':'
         self.message_tail = 'END'+'\n'
         self.send_message = ""
 
@@ -23,11 +23,15 @@ class UDP_connect:
     def CountRtspMD5(self,rtspUrl):
         md5_rtspurl = hashlib.md5()
         md5_rtspurl.update(rtspUrl);
-        self.md5_message = md5_rtspurl.hexdigest()[:8]
-    def SetMD5(self):
-        self.send_message+=self.md5_message
+        self.md5_message = md5_rtspurl.hexdigest()[:8]+ '|'
+
+
     def SetUdpHead(self):
         self.send_message +=self.message_head
+        self.send_message += self.md5_message
+
+
+
     def CleanMessage(self):
         self.send_message=""
 
@@ -48,7 +52,8 @@ class UDP_connect:
             cls = clses[i]
             class_str = f'{names[int(cls)]}'
             conf = confs[i]
-            text =class_str + ':' + str(conf)+':'+str(x1)+':'+str(y1)+':'+str(x2)+':'+str(y2)+':'+str(id)+'\n'
+            text = str(id)+':'+class_str + ':' + str(conf)+':'+\
+                   str(x1)+':'+str(y1)+':'+str(x2)+':'+str(y2)+'|'
             self.send_message+=text
 
     def message_send(self):

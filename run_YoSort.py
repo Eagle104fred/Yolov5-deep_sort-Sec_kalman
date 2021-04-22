@@ -109,7 +109,7 @@ def detect(opt, save_img=False):
     half = device.type != 'cpu'  # half precision only supported on CUDA
 
     #UPD初始化
-    udpIpc = UDP_connect()
+    udpIpc = UDP_connect(opt.source)
     udpIpc.CleanMessage()
 
     # Load model
