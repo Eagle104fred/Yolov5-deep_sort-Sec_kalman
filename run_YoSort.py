@@ -143,6 +143,8 @@ def detect(opt, save_img=False):
     txt_path = str(Path(out)) + '/results.txt'
 
     for frame_idx, (path, img, im0s, vid_cap) in enumerate(dataset):# dataset存储的内容为：路径，resize+pad的图片，原始图片，视频对象
+        img = cv2.rectangle(img,(0,0),(1920,120),(255,255,255),-1)#过滤监控时间和名字,填成白色
+
         img = torch.from_numpy(img).to(device)
         img = img.half() if half else img.float()  # uint8 to fp16/32
         img /= 255.0  # 0 - 255 to 0.0 - 1.0
@@ -210,7 +212,7 @@ def detect(opt, save_img=False):
                     identities = outputs[:,-3]
                     out_clses=outputs[:,-2]
                     out_confs=outputs[:,-1]
-
+                    #画框
                     draw_boxes(im0, bbox_xyxy,out_clses ,out_confs,names,identities)
                     udpIpc.message_concat(bbox_xyxy,out_clses ,out_confs,names,identities)
 
