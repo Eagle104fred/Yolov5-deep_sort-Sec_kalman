@@ -89,7 +89,7 @@ from tools import Tools
 
 class Detect:
     def __init__(self):
-        tool = Tools()
+        self.tool = Tools()
     def detect(opt, save_img=False):
         out, source, weights, view_img, save_txt, imgsz = \
             opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
@@ -191,7 +191,7 @@ class Detect:
                     labels = []
                     # Adapt detections to deep sort input format#yolov5的检测结果输出
                     for *xyxy, conf, cls in det:
-                        x_c, y_c, bbox_w, bbox_h = tool.bbox_rel(*xyxy)
+                        x_c, y_c, bbox_w, bbox_h = self.tool.bbox_rel(*xyxy)
                         obj = [x_c, y_c, bbox_w, bbox_h]
 
                         class_str = f'{names[int(cls)]}'
@@ -217,7 +217,7 @@ class Detect:
                         out_clses=outputs[:,-2]
                         out_confs=outputs[:,-1]
                         #画框
-                        tool.draw_boxes(im0, bbox_xyxy,out_clses ,out_confs,names,identities)
+                        self.tool.draw_boxes(im0, bbox_xyxy,out_clses ,out_confs,names,identities)
                         udpIpc.message_concat(bbox_xyxy,out_clses ,out_confs,names,identities)
 
                     # Write MOT compliant results to file
