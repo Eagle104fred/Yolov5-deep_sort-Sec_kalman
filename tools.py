@@ -31,7 +31,7 @@ class Tools:
             y2 += offset[1]
             # box text and bar
             id = int(identities[i]) if identities is not None else 0
-            color = compute_color_for_labels(id)
+            color = self.compute_color_for_labels(id)
             label = '{}{:d}'.format("", id)
             cls = clses[i]
             conf = confs[i]
