@@ -44,7 +44,7 @@ class DetectYoSort:
         half = device.type != 'cpu'  # half precision only supported on CUDA
 
         #UPD初始化
-        udpIpc = UDP_connect(opt.udp_ip,opt.udp_port,opt.source)
+        udpIpc = UDP_connect(opt.source,opt.udp_ip,opt.udp_port)
         udpIpc.CleanMessage()
 
         # Load model
