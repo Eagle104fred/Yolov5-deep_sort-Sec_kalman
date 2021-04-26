@@ -2,11 +2,11 @@ from socket import *
 import hashlib
 
 class UDP_connect:
-    def __init__(self,rtspUrl):
+    def __init__(self,rtspUrl,udpIp,udpPort):
         self.udp_socket = socket(AF_INET, SOCK_DGRAM)
-        self.server_addr = ('192.168.1.107', 8080)
+        self.server_addr = (udpIp, int(udpPort))
         # dest_addr = ('192.168.1.114', 8080)
-
+        print("ip:port",udpIp,udpPort)
         camBG_port = "7502"
         camCS_port = "7702"
         self.cam_port = camBG_port
