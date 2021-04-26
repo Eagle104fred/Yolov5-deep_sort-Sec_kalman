@@ -19,7 +19,7 @@ class Tools:
         """
         Simple function that adds fixed color depending on the class
         """
-        color = [int((p * (label ** 2 - label + 1)) % 255) for p in palette]
+        color = [int((p * (label ** 2 - label + 1)) % 255) for p in self.palette]
         return tuple(color)
 
     def draw_boxes(self,img, bbox, clses, confs, names, identities=None, offset=(0, 0)):
