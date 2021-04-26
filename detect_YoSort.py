@@ -45,7 +45,7 @@ class DetectYoSort:
 
         #UPD初始化
         udpIpc = UDP_connect(opt.source,opt.udp_ip,opt.udp_port)
-        udpIpc.CleanMessage()
+        udpIpc.CleanMessage()#初始化字段数组
 
         # Load model
         model = torch.load(weights, map_location=device)[
@@ -111,15 +111,14 @@ class DetectYoSort:
                     det[:, :4] = scale_coords(
                         img.shape[2:], det[:, :4], im0.shape).round()
 
-                    # Print results
+                    # Print results#给每个class打分
                     for c in det[:, -1].unique():
                         n = (det[:, -1] == c).sum()  # detections per class
                         s += '%g %ss, ' % (n, names[int(c)])  # add to string
 
                     bbox_xywh = []#存储每个框的位置信息
-                    confs = []
-
-                    labels = []
+                    confs = []#存储每个框的置信度用于deepsort
+                    labels = []#存储每个框的class
                     # Adapt detections to deep sort input format#yolov5的检测结果输出
                     for *xyxy, conf, cls in det:
                         x_c, y_c, bbox_w, bbox_h = self.tool.bbox_rel(*xyxy)

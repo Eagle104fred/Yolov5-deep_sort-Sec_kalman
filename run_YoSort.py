@@ -5,17 +5,16 @@ from yolov5.utils.datasets import LoadImages, LoadStreams
 from yolov5.utils.general import check_img_size, non_max_suppression, scale_coords
 import argparse
 import torch
-from detect_YoSort import DetectYoSort
-
+from detect_YoSort import DetectYoSort#主功能类
 
 
 if __name__ == '__main__':
 
-    det = DetectYoSort()
+    det = DetectYoSort()#实例化
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str,
-                        default='yolov5/weights/ship.pt', help='model.pt path')
+                        default='yolov5/weights/ship.pt', help='model.pt path')#yolov5检测模型
     # file/folder, 0 for webcam
     parser.add_argument('--source', type=str,
                         default='', help='source')#修改默认的检测源
@@ -53,4 +52,4 @@ if __name__ == '__main__':
     print(args)
 
     with torch.no_grad():
-        det.run(args)
+        det.run(args)#调用主功能
