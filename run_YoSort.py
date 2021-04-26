@@ -7,14 +7,14 @@
 # from deep_sort_pytorch.utils.parser import get_config
 # from deep_sort_pytorch.deep_sort import DeepSort
 # from socket_function import UDP_connect
-# import argparse
+
 # import os
 # import platform
 # import shutil
 # import time
 # from pathlib import Path
 # import cv2
-# import torch
+import torch
 # import torch.backends.cudnn as cudnn
 # from tools import Tools
 import argparse
