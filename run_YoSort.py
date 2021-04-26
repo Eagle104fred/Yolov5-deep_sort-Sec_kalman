@@ -1,20 +1,19 @@
-# import sys
-# sys.path.insert(0, './yolov5')
-#
+import sys
+sys.path.insert(0, './yolov5')
+
 # from yolov5.utils.datasets import LoadImages, LoadStreams
-# from yolov5.utils.general import check_img_size, non_max_suppression, scale_coords
+from yolov5.utils.general import check_img_size
 # from yolov5.utils.torch_utils import select_device, time_synchronized
 # from deep_sort_pytorch.utils.parser import get_config
 # from deep_sort_pytorch.deep_sort import DeepSort
-# from socket_function import UDP_connect
-
+#from socket_function import UDP_connect
 # import os
 # import platform
 # import shutil
 # import time
 # from pathlib import Path
 # import cv2
-import torch
+# import torch
 # import torch.backends.cudnn as cudnn
 # from tools import Tools
 import argparse
