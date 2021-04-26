@@ -46,8 +46,8 @@ if __name__ == '__main__':
                         default="deep_sort_pytorch/configs/deep_sort.yaml")
     parser.add_argument("--udp_ip", type=str,
                         default="127.0.0.1")#upd发送框的IP地址
-    parser.add_argument("--udp_port", type=str,
-                        default="9999")  # upd发送框的IP地址
+    parser.add_argument("--udp_port", type=int,
+                        default=9999)  # upd发送框的IP地址
     args = parser.parse_args()
     args.img_size = check_img_size(args.img_size)
     print(args)
