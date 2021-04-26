@@ -255,7 +255,7 @@ from detect import Detect
 
 if __name__ == '__main__':
 
-    det = Detect()
+    det = DeepSort()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str,
@@ -293,4 +293,4 @@ if __name__ == '__main__':
     print(args)
 
     with torch.no_grad():
-        det.detect(args)
+        det.run(args)

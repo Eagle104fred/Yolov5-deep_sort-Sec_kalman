@@ -18,10 +18,10 @@ import torch
 import torch.backends.cudnn as cudnn
 from tools import Tools
 
-class Detect:
+class DetectYoSort:
     def __init__(self):
         self.tool = Tools()
-    def detect(self,opt, save_img=False):
+    def run(self,opt, save_img=False):
         out, source, weights, view_img, save_txt, imgsz = \
             opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
         webcam = source == '0' or source.startswith(
