@@ -1,3 +1,5 @@
+import cv2
+
 class Tools:
     def __init__(self):
         self.palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
