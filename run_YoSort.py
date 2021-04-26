@@ -17,7 +17,7 @@ import cv2
 import torch
 import torch.backends.cudnn as cudnn
 from tools import Tools
-from detect import Detect
+from detect import DetectYoSort
 
 
 # palette = (2 ** 11 - 1, 2 ** 15 - 1, 2 ** 20 - 1)
@@ -255,7 +255,7 @@ from detect import Detect
 
 if __name__ == '__main__':
 
-    det = DeepSort()
+    det = DetectYoSort()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str,
