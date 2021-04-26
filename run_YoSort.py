@@ -13,7 +13,7 @@ from yolov5.utils.general import check_img_size
 # import time
 # from pathlib import Path
 # import cv2
-# import torch
+import torch
 # import torch.backends.cudnn as cudnn
 # from tools import Tools
 import argparse
