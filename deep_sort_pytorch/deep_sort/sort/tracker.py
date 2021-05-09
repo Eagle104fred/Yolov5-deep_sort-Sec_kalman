@@ -38,7 +38,7 @@ class Tracker:
 
     """
 
-    def __init__(self, metric, max_iou_distance=0.7, max_age=70, n_init=3):
+    def __init__(self, metric, max_iou_distance=0.7, max_age=70, n_init=3):#卡尔曼默认70帧血条
         self.metric = metric
         self.max_iou_distance = max_iou_distance
         self.max_age = max_age

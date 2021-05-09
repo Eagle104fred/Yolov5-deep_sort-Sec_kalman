@@ -78,6 +78,7 @@ class DetectYoSort:
         txt_path = str(Path(out)) + '/results.txt'
 
         for frame_idx, (path, img, im0s, vid_cap) in enumerate(dataset):# dataset存储的内容为：路径，resize+pad的图片，原始图片，视频对象
+
             img = cv2.rectangle(img,(0,0),(1920,120),(255,255,255),-1)#过滤监控时间和名字,填成白色
 
             img = torch.from_numpy(img).to(device)
@@ -119,7 +120,8 @@ class DetectYoSort:
                     bbox_xywh = []#存储每个框的位置信息
                     confs = []#存储每个框的置信度用于deepsort
                     labels = []#存储每个框的class
-                    # Adapt detections to deep sort input format#yolov5的检测结果输出
+                    # Adapt detections to deep sort input format
+                    # #yolov5的检测结果输出
                     for *xyxy, conf, cls in det:
                         x_c, y_c, bbox_w, bbox_h = self.tool.bbox_rel(*xyxy)
                         obj = [x_c, y_c, bbox_w, bbox_h]
@@ -173,7 +175,7 @@ class DetectYoSort:
                     cv2.imshow(p, im0)
                     if cv2.waitKey(1) == ord('q'):  # q to quit
                         raise StopIteration
-
+            #udp发送
             udpIpc.SetUdpTail()
             udpIpc.message_send()
             udpIpc.CleanMessage()

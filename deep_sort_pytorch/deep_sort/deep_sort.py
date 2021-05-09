@@ -23,7 +23,7 @@ class DeepSort(object):
         metric = NearestNeighborDistanceMetric(
             "cosine", max_cosine_distance, nn_budget)
         self.tracker = Tracker(
-            metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init)
+            metric, max_iou_distance=max_iou_distance, max_age=max_age, n_init=n_init)#注册追踪器
 
     def update(self, bbox_xywh, confidences, ori_img,labels):
         self.height, self.width = ori_img.shape[:2]
