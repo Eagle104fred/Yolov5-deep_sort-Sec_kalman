@@ -22,8 +22,8 @@ class DetectYoSort:
     def __init__(self):
         self.tool = Tools()
     def run(self,opt, save_img=False):
-        out, source, weights, view_img, save_txt, imgsz = \
-            opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
+        out, source, weights, view_img, save_txt, imgsz, pid = \
+            opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size,opt.check_pid
         webcam = source == '0' or source.startswith(
             'rtsp') or source.startswith('http') or source.endswith('.txt')
 
@@ -46,6 +46,8 @@ class DetectYoSort:
         #UPD初始化
         udpIpc = UDP_connect(opt.source,opt.udp_ip,opt.udp_port)
         udpIpc.CleanMessage()#初始化字段数组
+
+
 
         # Load model
         model = torch.load(weights, map_location=device)[
@@ -80,6 +82,7 @@ class DetectYoSort:
         for frame_idx, (path, img, im0s, vid_cap) in enumerate(dataset):# dataset存储的内容为：路径，resize+pad的图片，原始图片，视频对象
 
             img = cv2.rectangle(img,(0,0),(1920,120),(255,255,255),-1)#过滤监控时间和名字,填成白色
+            self.tool.CheckPID(pid)
 
             img = torch.from_numpy(img).to(device)
             img = img.half() if half else img.float()  # uint8 to fp16/32

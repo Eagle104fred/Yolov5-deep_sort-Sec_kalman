@@ -1,4 +1,6 @@
 import cv2
+import psutil
+import os
 
 class Tools:
     def __init__(self):
@@ -46,3 +48,8 @@ class Tools:
             cv2.putText(img, text, (x1, y1 +
                                     t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 2, [255, 255, 255], 2)
         return img
+
+    def CheckPID(self,pid):
+        if(pid !=0):
+            if not psutil.pid_exists(pid):
+                os.kill(os.getpid(),0);
