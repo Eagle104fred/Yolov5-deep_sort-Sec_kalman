@@ -38,7 +38,7 @@ class Tracker:
 
     """
 
-    def __init__(self, metric, max_iou_distance=0.7, max_age=70, n_init=3):#卡尔曼默认70帧血条
+    def __init__(self, metric, max_iou_distance=0.7, max_age=70, n_init=3):#max_age卡尔曼默认70帧血条, n_init更新到框的次数
         self.metric = metric
         self.max_iou_distance = max_iou_distance
         self.max_age = max_age
@@ -83,7 +83,7 @@ class Tracker:
         for track_idx, detection_idx in matches:#更新找到的框
             self.tracks[track_idx].update(
                 self.kf, detections[detection_idx])
-        for track_idx in unmatched_tracks:#失去匹配的框
+        for track_idx in unmatched_tracks:#未得到匹配的框
             self.tracks[track_idx].mark_missed()
         for detection_idx in unmatched_detections:#添加新的匹配框
             self._initiate_track(detections[detection_idx])
@@ -122,6 +122,7 @@ class Tracker:
 
             return cost_matrix
 
+        #给框分类
         # Split track set into confirmed and unconfirmed tracks.
         confirmed_tracks = [
             i for i, t in enumerate(self.tracks) if t.is_confirmed()]
@@ -156,7 +157,7 @@ class Tracker:
             mean, covariance, self._next_id, self.n_init, self.max_age,detection.label,
             detection.feature))
         #self._next_id+=1
-        self._next_id=self._id_pool.init()
+        self._next_id=self._id_pool.init()#调用id池
         # try:
         #     self._next_id += 1  # 新建id号
         # except:

@@ -72,7 +72,7 @@ class Track:
         self.age = 1
         self.time_since_update = 0
 
-        self.state = TrackState.Tentative
+        self.state = TrackState.Tentative#框状态:待定
         self.features = []
         if feature is not None:
             self.features.append(feature)
@@ -110,7 +110,7 @@ class Track:
         ret[2:] = ret[:2] + ret[2:]
         return ret
 
-    def increment_age(self):
+    def increment_age(self):#加血
         self.age += 1
         self.time_since_update += 1
 
@@ -153,7 +153,7 @@ class Track:
         """
         if self.state == TrackState.Tentative:
             self.state = TrackState.Deleted
-        elif self.time_since_update > self._max_age:
+        elif self.time_since_update > self._max_age:#超时
             self.state = TrackState.Deleted
 
     def is_tentative(self):

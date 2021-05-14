@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', type=str,
-                        default='yolov5/weights/ship.pt', help='model.pt path')#yolov5检测模型
+                        default='yolov5/weights/2021.5.13_best.pt', help='model.pt path')#yolov5检测模型
     # file/folder, 0 for webcam
     parser.add_argument('--source', type=str,
                         default='', help='source')#修改默认的检测源
