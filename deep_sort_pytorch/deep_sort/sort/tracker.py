@@ -87,6 +87,8 @@ class Tracker:
             self.tracks[track_idx].mark_missed()
         for detection_idx in unmatched_detections:#添加新的匹配框
             self._initiate_track(detections[detection_idx])
+
+
         #self.tracks = [t for t in self.tracks if not t.is_deleted()]#所有框更新完毕
         temp = []
         for t in self.tracks:

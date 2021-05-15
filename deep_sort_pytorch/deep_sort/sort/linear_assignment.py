@@ -8,7 +8,7 @@ from . import kalman_filter
 
 INFTY_COST = 1e+5
 
-#时间戳之间的框匹配参数
+#时间戳之间的框匹配参数(匈牙利)
 def min_cost_matching(
         distance_metric, max_distance, tracks, detections, track_indices=None,
         detection_indices=None):
