@@ -57,7 +57,7 @@ def min_cost_matching(
         tracks, detections, track_indices, detection_indices)
     cost_matrix[cost_matrix > max_distance] = max_distance + 1e-5
 
-    row_indices, col_indices = linear_assignment(cost_matrix)
+    row_indices, col_indices = linear_assignment(cost_matrix)#匈牙利线性问题
 
     matches, unmatched_tracks, unmatched_detections = [], [], []
     for col, detection_idx in enumerate(detection_indices):
@@ -126,7 +126,7 @@ def matching_cascade(
     for level in range(cascade_depth):
         if len(unmatched_detections) == 0:  # No detections left
             break
-
+        #matched
         track_indices_l = [
             k for k in track_indices
             if tracks[k].time_since_update == 1 + level

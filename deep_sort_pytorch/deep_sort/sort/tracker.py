@@ -131,7 +131,7 @@ class Tracker:
         unconfirmed_tracks = [
             i for i, t in enumerate(self.tracks) if not t.is_confirmed()]
 
-        # Associate confirmed tracks using appearance features.
+        # Associate confirmed tracks using appearance features.#级联卡尔曼计算
         matches_a, unmatched_tracks_a, unmatched_detections = \
             linear_assignment.matching_cascade(
                 gated_metric, self.metric.matching_threshold, self.max_age,
@@ -145,7 +145,7 @@ class Tracker:
             k for k in unmatched_tracks_a if
             self.tracks[k].time_since_update != 1]
         matches_b, unmatched_tracks_b, unmatched_detections = \
-            linear_assignment.min_cost_matching(
+            linear_assignment.min_cost_matching(#匈牙利计算
                 iou_matching.iou_cost, self.max_iou_distance, self.tracks,
                 detections, iou_track_candidates, unmatched_detections)
 
