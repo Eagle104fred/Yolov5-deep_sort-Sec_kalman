@@ -1,3 +1,10 @@
+# Introduction
+本项目修改自[mikel-brostrom的Yolov5_DeepSort_Pytorch](https://github.com/mikel-brostrom/Yolov5_DeepSort_Pytorch)主要针对船舶检测和追踪进行优化
+![image](https://user-images.githubusercontent.com/23237287/119972135-6f8ea480-bfe4-11eb-877c-46f504c68576.png)
+
+
+
+
 # GetStarted
 - 安装pytorch 1.8.1版本
 - > pip install -r requirements.txt
