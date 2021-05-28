@@ -1,4 +1,5 @@
 import sys
+
 sys.path.insert(0, './yolov5')
 
 from yolov5.utils.datasets import LoadImages, LoadStreams
@@ -7,23 +8,28 @@ from yolov5.utils.torch_utils import select_device, time_synchronized
 from deep_sort_pytorch.utils.parser import get_config
 from deep_sort_pytorch.deep_sort import DeepSort
 from socket_function import UDP_connect
-import argparse
+# import argparse
 import os
-import platform
+# import platform
 import shutil
 import time
 from pathlib import Path
 import cv2
 import torch
 import torch.backends.cudnn as cudnn
+
 from tools import Tools
+from KalmanBox import KalmanBox
+
 
 class DetectYoSort:
     def __init__(self):
         self.tool = Tools()
-    def run(self,opt, save_img=False):
+        self.kfBoxes = KalmanBox(maxAge=70)
+
+    def run(self, opt, save_img=False):
         out, source, weights, view_img, save_txt, imgsz, pid = \
-            opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size,opt.check_pid
+            opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, opt.check_pid
         webcam = source == '0' or source.startswith(
             'rtsp') or source.startswith('http') or source.endswith('.txt')
 
@@ -32,7 +38,8 @@ class DetectYoSort:
         cfg.merge_from_file(opt.config_deepsort)
         deepsort = DeepSort(cfg.DEEPSORT.REID_CKPT,
                             max_dist=cfg.DEEPSORT.MAX_DIST, min_confidence=cfg.DEEPSORT.MIN_CONFIDENCE,
-                            nms_max_overlap=cfg.DEEPSORT.NMS_MAX_OVERLAP, max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
+                            nms_max_overlap=cfg.DEEPSORT.NMS_MAX_OVERLAP,
+                            max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
                             max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
                             use_cuda=True)
 
@@ -43,11 +50,9 @@ class DetectYoSort:
         os.makedirs(out)  # make new output folder
         half = device.type != 'cpu'  # half precision only supported on CUDA
 
-        #UPD初始化
-        udpIpc = UDP_connect(opt.source,opt.udp_ip,opt.udp_port)
-        udpIpc.CleanMessage()#初始化字段数组
-
-
+        # UPD初始化
+        udpIpc = UDP_connect(opt.source, opt.udp_ip, opt.udp_port)
+        udpIpc.CleanMessage()  # 初始化字段数组
 
         # Load model
         model = torch.load(weights, map_location=device)[
@@ -59,11 +64,11 @@ class DetectYoSort:
         # Set Dataloader
         vid_path, vid_writer = None, None
         if webcam:
-            #view_img = True
+            # view_img = True
             cudnn.benchmark = True  # set True to speed up constant image size inference
             dataset = LoadStreams(source, img_size=imgsz)
         else:
-            #view_img = True
+            # view_img = True
             save_img = True
             dataset = LoadImages(source, img_size=imgsz)
 
@@ -79,10 +84,10 @@ class DetectYoSort:
         save_path = str(Path(out))
         txt_path = str(Path(out)) + '/results.txt'
 
-        for frame_idx, (path, img, im0s, vid_cap) in enumerate(dataset):# dataset存储的内容为：路径，resize+pad的图片，原始图片，视频对象
+        for frame_idx, (path, img, im0s, vid_cap) in enumerate(dataset):  # dataset存储的内容为：路径，resize+pad的图片，原始图片，视频对象
 
-            img = cv2.rectangle(img,(0,0),(1920,120),(255,255,255),-1)#过滤监控时间和名字,填成白色
-            self.tool.CheckPID(pid)
+            img = cv2.rectangle(img, (0, 0), (1920, 120), (255, 255, 255), -1)  # 过滤监控时间和名字,填成白色
+            self.tool.CheckPID(pid)  # 检测上位机是否存活
 
             img = torch.from_numpy(img).to(device)
             img = img.half() if half else img.float()  # uint8 to fp16/32
@@ -120,9 +125,9 @@ class DetectYoSort:
                         n = (det[:, -1] == c).sum()  # detections per class
                         s += '%g %ss, ' % (n, names[int(c)])  # add to string
 
-                    bbox_xywh = []#存储每个框的位置信息
-                    confs = []#存储每个框的置信度用于deepsort
-                    labels = []#存储每个框的class
+                    bbox_xywh = []  # 存储每个框的位置信息
+                    confs = []  # 存储每个框的置信度用于deepsort
+                    labels = []  # 存储每个框的class
                     # Adapt detections to deep sort input format
                     # #yolov5的检测结果输出
                     for *xyxy, conf, cls in det:
@@ -131,29 +136,37 @@ class DetectYoSort:
 
                         class_str = f'{names[int(cls)]}'
                         conf_str = f'{conf:.2f}'
-                        confint=conf*100
-                        #print(class_str + ':' + conf_str)
+                        confint = conf * 100
+                        # print(class_str + ':' + conf_str)
                         bbox_xywh.append(obj)
                         confs.append([conf.item()])
-                        labels.append([int(cls),int(confint)])#增加的conf和cls
-
+                        labels.append([int(cls), int(confint)])  # 增加的conf和cls
 
                     xywhs = torch.Tensor(bbox_xywh)
                     confss = torch.Tensor(confs)
 
                     # Pass detections to deepsort（deepsort主要功能实现）
-                    outputs = deepsort.update(xywhs, confss, im0,labels)#outputs为检测框预测序列
-
+                    outputs = deepsort.update(xywhs, confss, im0, labels)  # outputs为检测框预测序列
 
                     # draw boxes for visualization
                     if len(outputs) > 0:
-                        bbox_xyxy = outputs[:, :4]
-                        identities = outputs[:,-3]
-                        out_clses=outputs[:,-2]
-                        out_confs=outputs[:,-1]
-                        #画框
-                        self.tool.draw_boxes(im0, bbox_xyxy,out_clses ,out_confs,names,identities)
-                        udpIpc.message_concat(bbox_xyxy,out_clses ,out_confs,names,identities)
+                        # bbox_xyxy = outputs[:, :4]
+                        # identities = outputs[:, -3]
+                        temp_bbox = outputs[:, :4]
+                        temp_ids = outputs[:, -3]
+                        out_clses = outputs[:, -2]
+                        out_confs = outputs[:, -1]
+
+                        """
+                        KS:Kalman检测框滤波 
+                        """
+                        identities,bbox_xyxy=self.kfBoxes.Predict(temp_ids,temp_bbox)
+                        self.kfBoxes.UpdateAllAge()
+
+
+                        # 画框
+                        self.tool.draw_boxes(im0, bbox_xyxy, out_clses, out_confs, names, identities)
+                        udpIpc.message_concat(bbox_xyxy, out_clses, out_confs, names, identities)
 
                     # Write MOT compliant results to file
                     if save_txt and len(outputs) != 0:
@@ -165,24 +178,23 @@ class DetectYoSort:
                             identity = output[-1]
                             with open(txt_path, 'a') as f:
                                 f.write(('%g ' * 10 + '\n') % (frame_idx, identity, bbox_left,
-                                                               bbox_top, bbox_w, bbox_h, -1, -1, -1, -1))  # label format
+                                                               bbox_top, bbox_w, bbox_h, -1, -1, -1,
+                                                               -1))  # label format
 
                 else:
                     deepsort.increment_ages()
 
                 # Print time (inference + NMS)
-                #print('%sDone. (%.3fs)' % (s, t2 - t1))
+                # print('%sDone. (%.3fs)' % (s, t2 - t1))
 
                 # Stream results
                 if view_img:
                     cv2.imshow(p, im0)
                     if cv2.waitKey(1) == ord('q'):  # q to quit
                         raise StopIteration
-            #udp发送
+            # udp发送
             udpIpc.SetUdpTail()
             udpIpc.message_send()
             udpIpc.CleanMessage()
-
-
 
         print('Done. (%.3fs)' % (time.time() - t0))
