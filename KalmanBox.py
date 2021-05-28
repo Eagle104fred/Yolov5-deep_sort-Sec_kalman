@@ -22,7 +22,7 @@ class KalmanBox:
                     pred_x2=boxPred.predPoint_x2
                     pred_y2=boxPred.predPoint_y2
 
-                    #KS: 过滤初始预测不准的情况
+                    #KS: 过滤初始预测不准的情况(kalman的收敛过程的妥协)
                     if(abs(pred_x1-x1)<20):
                         x1=pred_x1
                     if (abs(pred_y1 - y1) < 20):
