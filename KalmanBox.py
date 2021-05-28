@@ -31,7 +31,7 @@ class KalmanBox:
                         x2 = pred_x2
                     if (abs(pred_y2 - y2) < 50):
                         y2 = pred_y2
-                        
+
                     resultBoxes.append([x1, y1, x2, y2])
                     resultId.append(id)
                     flag = False

@@ -17,7 +17,7 @@ if __name__ == '__main__':
                         default='yolov5/weights/2021.5.13_best.pt', help='model.pt path')#yolov5检测模型
     # file/folder, 0 for webcam
     parser.add_argument('--source', type=str,
-                        default='rtsp://admin:SMUwm_007@183.192.69.170:7502/id=1', help='source')#修改默认的检测源
+                        default='', help='source')#修改默认的检测源
     parser.add_argument('--output', type=str, default='inference/output',
                         help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=640,
@@ -30,7 +30,7 @@ if __name__ == '__main__':
                         help='output video codec (verify ffmpeg support)')
     parser.add_argument('--device', default='',
                         help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--view-img', action='store_false',
+    parser.add_argument('--view-img', action='store_true',
                         help='display results')
     parser.add_argument('--save-txt', action='store_true',
                         help='save results to *.txt')
