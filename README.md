@@ -21,4 +21,5 @@
 - 使用DetectYoSort类封装了原来的检测函数，方便项目嵌入
 - 增加参数可与上位机联动关闭
 - 更新检测框的卡尔曼滤波使得框跳动减缓
-- 更新纯卡尔曼预测目标框, 减少检测消耗(NEW!) > 使用--kalman_predict开启功能 --kalmanPred_spacing 30 设置间隔帧数
+- 更新纯卡尔曼预测目标框, 减少检测消耗(NEW!) 
+  - > --kalman_predict开启功能 --kalmanPred_spacing 30 设置间隔帧数
