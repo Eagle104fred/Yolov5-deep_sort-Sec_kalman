@@ -50,6 +50,8 @@ if __name__ == '__main__':
                         default='0')  # upd发送框的IP地址
     parser.add_argument('--kalman_predict', action='store_true',
                         help='kalman predict ship only')
+    parser.add_argument('--kalmanPred_spacing', type=int,default=10,
+                        help='every some frame using kalman_predict function')
 
     args = parser.parse_args()
     args.img_size = check_img_size(args.img_size)

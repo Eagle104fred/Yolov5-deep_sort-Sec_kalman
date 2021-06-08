@@ -26,11 +26,11 @@ class DetectYoSort:
     def __init__(self):
         self.tool = Tools()
         self.kfBoxes = KalmanBox(maxAge=70)
-        self.counter = Counter(10)
+
 
     def run(self, opt, save_img=False):
-        out, source, weights, view_img, save_txt, imgsz, pid, FlagKfPredict = \
-            opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, opt.check_pid, opt.kalman_predict
+        out, source, weights, view_img, save_txt, imgsz, pid, FlagKfPredict,KfP_Spacing= \
+            opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, opt.check_pid, opt.kalman_predict,opt.kalmanPred_spacing
         webcam = source == '0' or source.startswith(
             'rtsp') or source.startswith('http') or source.endswith('.txt')
 
@@ -54,6 +54,9 @@ class DetectYoSort:
         # UPD初始化
         udpIpc = UDP_connect(opt.source, opt.udp_ip, opt.udp_port)
         udpIpc.CleanMessage()  # 初始化字段数组
+
+        #KS: 卡尔曼预测间隔帧数设置
+        kpCounter = Counter(KfP_Spacing)
 
         # Load model
         model = torch.load(weights, map_location=device)[
@@ -120,10 +123,10 @@ class DetectYoSort:
                 KS:使用卡尔曼进行预测禁用yolo
                 """
                 if (FlagKfPredict == False):
-                    self.counter.status = "yolo"
+                    kpCounter.status = "yolo"
 
-                if (self.counter.status == "kalman"):
-                    self.counter.update()  # KS: 计数一定次数切换yolo
+                if (kpCounter.status == "kalman"):
+                    kpCounter.update()  # KS: 计数一定次数切换yolo
                     identities, bbox_xyxy = self.kfBoxes.Predict()  # KS: kalman预测不修正
                     self.tool.draw_boxes_kalman(im0, bbox_xyxy, identities)
                     udpIpc.message_concat_Kalman(bbox_xyxy, identities)
@@ -132,7 +135,7 @@ class DetectYoSort:
                     """
                     KS:使用yolo进行预测kalman进行滤波 
                     """
-                    self.counter.update()  # KS: 计数一定次数切换kalman
+                    kpCounter.update()  # KS: 计数一定次数切换kalman
                     if det is not None and len(det):
                         # Rescale boxes from img_size to im0 size
                         det[:, :4] = scale_coords(
