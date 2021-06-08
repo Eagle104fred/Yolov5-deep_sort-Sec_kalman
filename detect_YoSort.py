@@ -18,7 +18,7 @@ import cv2
 import torch
 import torch.backends.cudnn as cudnn
 
-from tools import Tools
+from tools import Tools, Counter
 from KalmanBox import KalmanBox
 
 
@@ -26,10 +26,11 @@ class DetectYoSort:
     def __init__(self):
         self.tool = Tools()
         self.kfBoxes = KalmanBox(maxAge=70)
+        self.counter = Counter(10)
 
     def run(self, opt, save_img=False):
-        out, source, weights, view_img, save_txt, imgsz, pid = \
-            opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, opt.check_pid
+        out, source, weights, view_img, save_txt, imgsz, pid, FlagKfPredict = \
+            opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, opt.check_pid, opt.kalman_predict
         webcam = source == '0' or source.startswith(
             'rtsp') or source.startswith('http') or source.endswith('.txt')
 
@@ -103,7 +104,7 @@ class DetectYoSort:
             pred = non_max_suppression(
                 pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
             t2 = time_synchronized()
-
+            print("waste time:", t2 - t1)
             # Process detections
             udpIpc.SetUdpHead()
             for i, det in enumerate(pred):  # detections per image
@@ -115,79 +116,96 @@ class DetectYoSort:
                 s += '%gx%g ' % img.shape[2:]  # print string
                 save_path = str(Path(out) / Path(p).name)
 
-                if det is not None and len(det):
-                    # Rescale boxes from img_size to im0 size
-                    det[:, :4] = scale_coords(
-                        img.shape[2:], det[:, :4], im0.shape).round()
+                """
+                KS:使用卡尔曼进行预测禁用yolo
+                """
+                if (FlagKfPredict == False):
+                    self.counter.status = "yolo"
 
-                    # Print results#给每个class打分
-                    for c in det[:, -1].unique():
-                        n = (det[:, -1] == c).sum()  # detections per class
-                        s += '%g %ss, ' % (n, names[int(c)])  # add to string
-
-                    bbox_xywh = []  # 存储每个框的位置信息
-                    confs = []  # 存储每个框的置信度用于deepsort
-                    labels = []  # 存储每个框的class
-                    # Adapt detections to deep sort input format
-                    # #yolov5的检测结果输出
-                    for *xyxy, conf, cls in det:
-                        x_c, y_c, bbox_w, bbox_h = self.tool.bbox_rel(*xyxy)
-                        obj = [x_c, y_c, bbox_w, bbox_h]
-
-                        class_str = f'{names[int(cls)]}'
-                        conf_str = f'{conf:.2f}'
-                        confint = conf * 100
-                        # print(class_str + ':' + conf_str)
-                        bbox_xywh.append(obj)
-                        confs.append([conf.item()])
-                        labels.append([int(cls), int(confint)])  # 增加的conf和cls
-
-                    xywhs = torch.Tensor(bbox_xywh)
-                    confss = torch.Tensor(confs)
-
-                    # Pass detections to deepsort（deepsort主要功能实现）
-                    outputs = deepsort.update(xywhs, confss, im0, labels)  # outputs为检测框预测序列
-
-                    # draw boxes for visualization
-                    if len(outputs) > 0:
-                        # bbox_xyxy = outputs[:, :4]
-                        # identities = outputs[:, -3]
-                        temp_bbox = outputs[:, :4]
-                        temp_ids = outputs[:, -3]
-                        out_clses = outputs[:, -2]
-                        out_confs = outputs[:, -1]
-
-                        """
-                        KS:Kalman检测框滤波 
-                        """
-                        identities,bbox_xyxy=self.kfBoxes.Predict(temp_ids,temp_bbox)
-                        self.kfBoxes.UpdateAllAge()
-
-
-                        # 画框
-                        self.tool.draw_boxes(im0, bbox_xyxy, out_clses, out_confs, names, identities)
-                        udpIpc.message_concat(bbox_xyxy, out_clses, out_confs, names, identities)
-
-                    # Write MOT compliant results to file
-                    if save_txt and len(outputs) != 0:
-                        for j, output in enumerate(outputs):
-                            bbox_left = output[0]
-                            bbox_top = output[1]
-                            bbox_w = output[2]
-                            bbox_h = output[3]
-                            identity = output[-1]
-                            with open(txt_path, 'a') as f:
-                                f.write(('%g ' * 10 + '\n') % (frame_idx, identity, bbox_left,
-                                                               bbox_top, bbox_w, bbox_h, -1, -1, -1,
-                                                               -1))  # label format
+                if (self.counter.status == "kalman"):
+                    self.counter.update()  # KS: 计数一定次数切换yolo
+                    identities, bbox_xyxy = self.kfBoxes.Predict()  # KS: kalman预测不修正
+                    self.tool.draw_boxes_kalman(im0, bbox_xyxy, identities)
+                    udpIpc.message_concat_Kalman(bbox_xyxy, identities)
 
                 else:
-                    deepsort.increment_ages()
+                    """
+                    KS:使用yolo进行预测kalman进行滤波 
+                    """
+                    self.counter.update()  # KS: 计数一定次数切换kalman
+                    if det is not None and len(det):
+                        # Rescale boxes from img_size to im0 size
+                        det[:, :4] = scale_coords(
+                            img.shape[2:], det[:, :4], im0.shape).round()
+
+                        # Print results#给每个class打分
+                        for c in det[:, -1].unique():
+                            n = (det[:, -1] == c).sum()  # detections per class
+                            s += '%g %ss, ' % (n, names[int(c)])  # add to string
+
+                        bbox_xywh = []  # 存储每个框的位置信息
+                        confs = []  # 存储每个框的置信度用于deepsort
+                        labels = []  # 存储每个框的class
+                        # Adapt detections to deep sort input format
+                        # #yolov5的检测结果输出
+                        for *xyxy, conf, cls in det:
+                            x_c, y_c, bbox_w, bbox_h = self.tool.bbox_rel(*xyxy)
+                            obj = [x_c, y_c, bbox_w, bbox_h]
+
+                            class_str = f'{names[int(cls)]}'
+                            conf_str = f'{conf:.2f}'
+                            confint = conf * 100
+                            # print(class_str + ':' + conf_str)
+                            bbox_xywh.append(obj)
+                            confs.append([conf.item()])
+                            labels.append([int(cls), int(confint)])  # 增加的conf和cls
+
+                        xywhs = torch.Tensor(bbox_xywh)
+                        confss = torch.Tensor(confs)
+
+                        # Pass detections to deepsort（deepsort主要功能实现）
+                        outputs = deepsort.update(xywhs, confss, im0, labels)  # outputs为检测框预测序列
+
+                        # draw boxes for visualization
+                        if len(outputs) > 0:
+                            # bbox_xyxy = outputs[:, :4]
+                            # identities = outputs[:, -3]
+                            temp_bbox = outputs[:, :4]
+                            temp_ids = outputs[:, -3]
+                            out_clses = outputs[:, -2]
+                            out_confs = outputs[:, -1]
+
+                            """
+                            KS:Kalman检测框滤波 
+                            """
+                            identities, bbox_xyxy = self.kfBoxes.Filter(temp_ids, temp_bbox)
+                            self.kfBoxes.UpdateAllAge()
+
+                            # 画框
+                            self.tool.draw_boxes(im0, bbox_xyxy, out_clses, out_confs, names, identities)
+                            udpIpc.message_concat(bbox_xyxy, out_clses, out_confs, names, identities)
+
+                        # Write MOT compliant results to file
+                        if save_txt and len(outputs) != 0:
+                            for j, output in enumerate(outputs):
+                                bbox_left = output[0]
+                                bbox_top = output[1]
+                                bbox_w = output[2]
+                                bbox_h = output[3]
+                                identity = output[-1]
+                                with open(txt_path, 'a') as f:
+                                    f.write(('%g ' * 10 + '\n') % (frame_idx, identity, bbox_left,
+                                                                   bbox_top, bbox_w, bbox_h, -1, -1, -1,
+                                                                   -1))  # label format
+
+                    else:
+                        deepsort.increment_ages()
 
                 # Print time (inference + NMS)
                 # print('%sDone. (%.3fs)' % (s, t2 - t1))
 
                 # Stream results
+                view_img = True
                 if view_img:
                     cv2.imshow(p, im0)
                     if cv2.waitKey(1) == ord('q'):  # q to quit

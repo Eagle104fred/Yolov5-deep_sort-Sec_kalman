@@ -34,6 +34,13 @@ class UDP_connect:
     def SetUdpTail(self):
         self.send_message += self.message_tail
     #发送数据主体
+    def message_concat_Kalman(self,bbox,identities=None):
+        for i, box in enumerate(bbox):
+            x1, y1, x2, y2 = [int(i) for i in box]
+            id = int(identities[i]) if identities is not None else 0
+            text = str(id) + ':' + str(x1) + ':' + str(y1) + ':' + str(x2) + ':' + str(y2) + '|'
+            self.send_message+=text
+
     def message_concat(self,bbox, clses, confs, names,identities=None, offset=(0, 0)):
         for i, box in enumerate(bbox):
             x1, y1, x2, y2 = [int(i) for i in box]
