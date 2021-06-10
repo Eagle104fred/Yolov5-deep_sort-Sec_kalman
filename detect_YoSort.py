@@ -190,9 +190,10 @@ class DetectYoSort:
                             """
                             KS:Kalman检测框滤波 
                             """
+                            self.meanSpeed.Count(time_synchronized(), self.kfBoxes.predList)  # KS: 计算每个框的平均移动速度
                             identities, bbox_xyxy = self.kfBoxes.Filter(temp_ids, temp_bbox)
                             self.kfBoxes.UpdateAllAge()
-                            self.meanSpeed.Count(time_synchronized(), self.kfBoxes.predList)#KS: 计算每个框的平均移动速度
+
 
                             # 画框
                             self.tool.draw_boxes_kalman(im0, bbox_xyxy,    identities)

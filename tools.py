@@ -78,7 +78,7 @@ class Tools:
 
 class Counter:
     def __init__(self, maxAge):
-        maxAge=8
+        maxAge=20
         self.kalmanAge = maxAge
         self.yoloAge = 1
         self.maxAge = maxAge
