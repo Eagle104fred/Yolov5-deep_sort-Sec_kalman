@@ -18,7 +18,7 @@ import cv2
 import torch
 import torch.backends.cudnn as cudnn
 
-from tools import Tools, Counter
+from tools import Tools, Counter,MeanSpeed
 from KalmanBox import KalmanBox
 
 
@@ -26,7 +26,7 @@ class DetectYoSort:
     def __init__(self):
         self.tool = Tools()
         self.kfBoxes = KalmanBox(maxAge=70)
-
+        self.meanSpeed = MeanSpeed(time.time())
 
     def run(self, opt, save_img=False):
         out, source, weights, view_img, save_txt, imgsz, pid, FlagKfPredict,KfP_Spacing= \
@@ -55,7 +55,7 @@ class DetectYoSort:
         udpIpc = UDP_connect(opt.source, opt.udp_ip, opt.udp_port)
         udpIpc.CleanMessage()  # 初始化字段数组
 
-        #KS: 卡尔曼预测间隔帧数设置
+        #KS: 卡尔曼预测间隔帧数计数器 设置
         kpCounter = Counter(KfP_Spacing)
 
         # Load model
@@ -107,7 +107,8 @@ class DetectYoSort:
             pred = non_max_suppression(
                 pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
             t2 = time_synchronized()
-            print("waste time:", t2 - t1)
+
+            #print("waste time:", t2 - t1)
             # Process detections
             udpIpc.SetUdpHead()
             for i, det in enumerate(pred):  # detections per image
@@ -122,20 +123,21 @@ class DetectYoSort:
                 """
                 KS:使用卡尔曼进行预测禁用yolo
                 """
-                if (FlagKfPredict == False):
-                    kpCounter.status = "yolo"
+                # if (FlagKfPredict == False):
+                #     kpCounter.status = "yolo"
 
                 if (kpCounter.status == "kalman"):
-                    kpCounter.update()  # KS: 计数一定次数切换yolo
+                    kpCounter.Update()  # KS: 计数一定次数切换yolo
                     identities, bbox_xyxy = self.kfBoxes.Predict()  # KS: kalman预测不修正
                     self.tool.draw_boxes_kalman(im0, bbox_xyxy, identities)
                     udpIpc.message_concat_Kalman(bbox_xyxy, identities)
+
 
                 else:
                     """
                     KS:使用yolo进行预测kalman进行滤波 
                     """
-                    kpCounter.update()  # KS: 计数一定次数切换kalman
+                    kpCounter.Update()  # KS: 计数一定次数切换kalman
                     if det is not None and len(det):
                         # Rescale boxes from img_size to im0 size
                         det[:, :4] = scale_coords(
@@ -183,9 +185,11 @@ class DetectYoSort:
                             """
                             identities, bbox_xyxy = self.kfBoxes.Filter(temp_ids, temp_bbox)
                             self.kfBoxes.UpdateAllAge()
+                            self.meanSpeed.Count(time_synchronized(), self.kfBoxes.predList)
 
                             # 画框
-                            self.tool.draw_boxes(im0, bbox_xyxy, out_clses, out_confs, names, identities)
+                            self.tool.draw_boxes_kalman(im0, bbox_xyxy,    identities)
+                            #self.tool.draw_boxes(im0, bbox_xyxy, out_clses, out_confs, names, identities)
                             udpIpc.message_concat(bbox_xyxy, out_clses, out_confs, names, identities)
 
                         # Write MOT compliant results to file
@@ -208,6 +212,7 @@ class DetectYoSort:
                 # print('%sDone. (%.3fs)' % (s, t2 - t1))
 
                 # Stream results
+
                 view_img = True
                 if view_img:
                     cv2.imshow(p, im0)

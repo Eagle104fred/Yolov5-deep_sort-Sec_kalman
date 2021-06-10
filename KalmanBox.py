@@ -6,6 +6,7 @@ class KalmanBox:
     """
     KS:kalman滤波器组
     """
+
     def __init__(self, maxAge):
         self.predList = []
         self.maxAge = maxAge
@@ -38,8 +39,9 @@ class KalmanBox:
                     if (abs(pred_y2 - y2) < 20):
                         y2 = pred_y2
 
-                    resultBoxes.append([x1, y1, x2, y2])
-                    resultId.append(id)
+                    if (boxPred.IsShow == True):#KS: 只有经过一定的时间的卡尔曼才可以输出
+                        resultBoxes.append([x1, y1, x2, y2])
+                        resultId.append(id)
                     flag = False
             if (flag):
                 """
@@ -61,8 +63,10 @@ class KalmanBox:
             y1 = box.predPoint_y1
             x2 = box.predPoint_x2
             y2 = box.predPoint_y2
-            resultBoxes.append([x1, y1, x2, y2])
-            resultId.append(box.id)
+
+            if(box.IsShow==True):#KS: 只有经过一定的时间的卡尔曼才可以输出
+                resultBoxes.append([x1, y1, x2, y2])
+                resultId.append(box.id)
         return resultId, resultBoxes
 
     def UpdateAllAge(self):
@@ -71,35 +75,48 @@ class KalmanBox:
         """
         for box in self.predList:
             if (box.age <= 0):
-                self.predList.remove(box)
-            box.UpdateAge()
-
-
-
+                self.predList.remove(box)#KS: 血条耗尽删除box
+            box.age-=1 #KS: 更新血条
 
 
 class KfBox:
     """
     KS:单个卡尔曼追踪器定义
     """
+
     def __init__(self, id, x1, y1, x2, y2, age):
         self.age = age
         self.id = id
-        self.kf_p1 = KalmanFilter()
-        self.kf_p2 = KalmanFilter()
+
+        self.kf = KalmanFilter()
+        # self.kf_p1 = KalmanFilter()
+        # self.kf_p2 = KalmanFilter()
+
         self.predPoint_x1 = x1
         self.predPoint_y1 = y1
         self.predPoint_x2 = x2
         self.predPoint_y2 = y2
+        self.oldMid = [0, 0]  # KS: 上一帧的框中点位置
+        self.meanX = 0  # KS: 存储平均速度送入卡尔曼
+        self.meanY = 0  # KS: 存储平均速度送入卡尔曼
 
-    def UpdateAge(self):
-        self.age -= 1
+        self.IsShow = False
+        self.DetectTimes = 0;
 
     def Update(self, x1, y1, x2, y2):
-        self.predPoint_x1, self.predPoint_y1 = self.kf_p1.Update(x1, y1)
-        self.predPoint_x2, self.predPoint_y2 = self.kf_p2.Update(x2, y2)
+        self.predPoint_x1, self.predPoint_y1, self.predPoint_x2, self.predPoint_y2 = self.kf.Updatex2(x1, y1, x2, y2,
+                                                                                                      self.meanX,
+                                                                                                      self.meanY)
+        # self.predPoint_x1, self.predPoint_y1=self.kf_p1.Update(x1,y1)
+        # self.predPoint_x2, self.predPoint_y2 = self.kf_p2.Update(x2, y2)
+
         self.age = 70
+        if (self.DetectTimes > 10):
+            self.IsShow = True
+        else:
+            self.DetectTimes += 1
 
     def Predict(self):
-        self.predPoint_x1, self.predPoint_y1 = self.kf_p1.Predict()
-        self.predPoint_x2, self.predPoint_y2 = self.kf_p2.Predict()
+        self.predPoint_x1, self.predPoint_y1, self.predPoint_x2, self.predPoint_y2 = self.kf.Predictx2()
+        # self.predPoint_x1, self.predPoint_y1=self.kf_p1.Predict()
+        # self.predPoint_x2, self.predPoint_y2=self.kf_p2.Predict()
