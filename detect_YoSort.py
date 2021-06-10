@@ -18,7 +18,7 @@ import cv2
 import torch
 import torch.backends.cudnn as cudnn
 
-from tools import Tools, Counter,MeanSpeed
+from tools import Tools, Counter
 from KalmanBox import KalmanBox
 
 
@@ -26,11 +26,11 @@ class DetectYoSort:
     def __init__(self):
         self.tool = Tools()
         self.kfBoxes = KalmanBox(maxAge=30)
-        self.meanSpeed = MeanSpeed(time.time())
+        # self.meanSpeed = MeanSpeed(time.time())
 
     def run(self, opt, save_img=False):
-        out, source, weights, view_img, save_txt, imgsz, pid, FlagKfPredict,KfP_Spacing= \
-            opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, opt.check_pid, opt.kalman_predict,opt.kalmanPred_spacing
+        out, source, weights, view_img, save_txt, imgsz, pid, FlagKfPredict, KfP_Spacing = \
+            opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size, opt.check_pid, opt.kalman_predict, opt.kalmanPred_spacing
         webcam = source == '0' or source.startswith(
             'rtsp') or source.startswith('http') or source.endswith('.txt')
 
@@ -61,7 +61,7 @@ class DetectYoSort:
         udpIpc = UDP_connect(opt.source, opt.udp_ip, opt.udp_port)
         udpIpc.CleanMessage()  # 初始化字段数组
 
-        #KS: 卡尔曼预测间隔帧数计数器 设置
+        # KS: 卡尔曼预测间隔帧数计数器 设置
         kpCounter = Counter(KfP_Spacing)
 
         # Load model
@@ -114,7 +114,7 @@ class DetectYoSort:
                 pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
             t2 = time_synchronized()
 
-            #print("waste time:", t2 - t1)
+            # print("waste time:", t2 - t1)
             # Process detections
             udpIpc.SetUdpHead()
             for i, det in enumerate(pred):  # detections per image
@@ -129,13 +129,14 @@ class DetectYoSort:
                 """
                 KS:使用卡尔曼进行预测禁用yolo
                 """
-                FlagKfPredict=True
+
                 if (FlagKfPredict == False):
-                     kpCounter.status = "yolo"
+                    kpCounter.status = "yolo"
 
                 if (kpCounter.status == "kalman"):
                     kpCounter.Update()  # KS: 计数一定次数切换yolo
                     identities, bbox_xyxy = self.kfBoxes.Predict()  # KS: kalman预测不修正
+                    self.kfBoxes.UpdateAllAge()
                     self.tool.draw_boxes_kalman(im0, bbox_xyxy, identities)
                     udpIpc.message_concat_Kalman(bbox_xyxy, identities)
 
@@ -190,14 +191,13 @@ class DetectYoSort:
                             """
                             KS:Kalman检测框滤波 
                             """
-                            self.meanSpeed.Count(time_synchronized(), self.kfBoxes.predList)  # KS: 计算每个框的平均移动速度
+                            # self.meanSpeed.Count(time_synchronized(), temp_ids, temp_bbox)  # KS: 计算每个框的平均移动速度
                             identities, bbox_xyxy = self.kfBoxes.Filter(temp_ids, temp_bbox)
                             self.kfBoxes.UpdateAllAge()
 
-
                             # 画框
-                            self.tool.draw_boxes_kalman(im0, bbox_xyxy,    identities)
-                            #self.tool.draw_boxes(im0, bbox_xyxy, out_clses, out_confs, names, identities)
+                            self.tool.draw_boxes_kalman(im0, bbox_xyxy, identities)
+                            # self.tool.draw_boxes(im0, bbox_xyxy, out_clses, out_confs, names, identities)
                             udpIpc.message_concat(bbox_xyxy, out_clses, out_confs, names, identities)
 
                         # Write MOT compliant results to file
@@ -221,7 +221,6 @@ class DetectYoSort:
 
                 # Stream results
 
-                view_img = True
                 if view_img:
                     cv2.imshow(p, im0)
                     if cv2.waitKey(1) == ord('q'):  # q to quit

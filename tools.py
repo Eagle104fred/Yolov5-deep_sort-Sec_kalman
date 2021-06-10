@@ -69,21 +69,24 @@ class Tools:
                                     t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 2, [255, 255, 255], 2)
         return img
 
-    #KS: 联动关闭
+    # KS: 联动关闭
     def CheckPID(self, pid):
         if (pid != 0):
             if not psutil.pid_exists(pid):
                 os.kill(os.getpid(), 0);
 
 
+"""
+KS:控制kalman和yolo刷新的次数 
+"""
+
+
 class Counter:
     def __init__(self, maxAge):
-        maxAge=20
         self.kalmanAge = maxAge
         self.yoloAge = 1
         self.maxAge = maxAge
         self.status = "yolo"
-
 
     def Update(self):
         if (self.status == "yolo"):
@@ -92,7 +95,7 @@ class Counter:
                 return self.status
             else:
                 self.yoloAge = 1  # KS: reset
-                if (self.status == "yolo"):#KS: 切换状态
+                if (self.status == "yolo"):  # KS: 切换状态
                     self.status = "kalman"
                 else:
                     self.status = "yolo"
@@ -104,7 +107,7 @@ class Counter:
                 return self.status
             else:
                 self.kalmanAge = self.maxAge  # KS: reset
-                if (self.status == "yolo"):#KS: 切换状态
+                if (self.status == "yolo"):  # KS: 切换状态
                     self.status = "kalman"
                 else:
                     self.status = "yolo"
@@ -112,27 +115,25 @@ class Counter:
 
 
 class MeanSpeed:
-    def __init__(self,time):
+    def __init__(self, time):
         self.oldTime = time
 
-    def Count(self, currentTime, boxes):
-        for  box in boxes:
-            x1=box.predPoint_x1
-            y1=box.predPoint_y1
-            x2=box.predPoint_x2
-            y2=box.predPoint_y2
-            midX = (x2 + x1) / 2
-            midY = (y2 + y1) / 2
-            mid = [midX, midY]
+    def Count(self, currentTime, box, x1, y1, x2, y2):
+        midX = (x2 + x1) / 2
+        midY = (y2 + y1) / 2
+        mid = [midX, midY]
 
-            diffTime = currentTime - self.oldTime
-            meanX=(mid[0] - box.oldMid[0])/diffTime
-            meanY=(mid[1]-box.oldMid[1])/diffTime
+        diffTime = currentTime - self.oldTime
 
-            box.oldMid = mid
-            box.meanX=meanX
-            box.meanY=meanY
-            print("{0}meanSpeed:X:{1},Y:{2}".format(box.id,  meanX,meanY))
-        self.oldTime = currentTime
+        oldMid=box.oldMid
+        meanX = (mid[0] - box.oldMid[0]) / diffTime
+        meanY = (mid[1] - box.oldMid[1]) / diffTime
 
+        box.oldMid = mid
+        box.meanX = meanX
+        box.meanY = meanY
+        print("{0}meanSpeed:X:{1},Y:{2}".format(box.id, meanX, meanY))
 
+        #
+        # self.oldTime = currentTime
+        #
