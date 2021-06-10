@@ -25,7 +25,7 @@ from KalmanBox import KalmanBox
 class DetectYoSort:
     def __init__(self):
         self.tool = Tools()
-        self.kfBoxes = KalmanBox(maxAge=70)
+        self.kfBoxes = KalmanBox(maxAge=30)
         self.meanSpeed = MeanSpeed(time.time())
 
     def run(self, opt, save_img=False):
@@ -37,11 +37,17 @@ class DetectYoSort:
         # initialize deepsort
         cfg = get_config()
         cfg.merge_from_file(opt.config_deepsort)
+        # deepsort = DeepSort(cfg.DEEPSORT.REID_CKPT,
+        #                     max_dist=cfg.DEEPSORT.MAX_DIST, min_confidence=cfg.DEEPSORT.MIN_CONFIDENCE,
+        #                     nms_max_overlap=cfg.DEEPSORT.NMS_MAX_OVERLAP,
+        #                     max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
+        #                     max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
+        #                     use_cuda=True)
         deepsort = DeepSort(cfg.DEEPSORT.REID_CKPT,
                             max_dist=cfg.DEEPSORT.MAX_DIST, min_confidence=cfg.DEEPSORT.MIN_CONFIDENCE,
                             nms_max_overlap=cfg.DEEPSORT.NMS_MAX_OVERLAP,
                             max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
-                            max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
+                            max_age=30, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
                             use_cuda=True)
 
         # Initialize
@@ -123,8 +129,9 @@ class DetectYoSort:
                 """
                 KS:使用卡尔曼进行预测禁用yolo
                 """
-                # if (FlagKfPredict == False):
-                #     kpCounter.status = "yolo"
+                FlagKfPredict=True
+                if (FlagKfPredict == False):
+                     kpCounter.status = "yolo"
 
                 if (kpCounter.status == "kalman"):
                     kpCounter.Update()  # KS: 计数一定次数切换yolo
@@ -185,7 +192,7 @@ class DetectYoSort:
                             """
                             identities, bbox_xyxy = self.kfBoxes.Filter(temp_ids, temp_bbox)
                             self.kfBoxes.UpdateAllAge()
-                            self.meanSpeed.Count(time_synchronized(), self.kfBoxes.predList)
+                            self.meanSpeed.Count(time_synchronized(), self.kfBoxes.predList)#KS: 计算每个框的平均移动速度
 
                             # 画框
                             self.tool.draw_boxes_kalman(im0, bbox_xyxy,    identities)

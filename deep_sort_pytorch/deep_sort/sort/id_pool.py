@@ -1,7 +1,7 @@
 class IdPool:
     def __init__(self):
         self.id_dict = {}#字典用于存储每个id
-        self.hp=100#每个id血条为100帧, deepsort的id抛弃血条为70帧
+        self.hp=30#每个id血条为100帧, deepsort的id抛弃血条为70帧
     def init(self):#检测这个id是否存活
         for i in range(1,9999):
             if(i in self.id_dict.keys()):

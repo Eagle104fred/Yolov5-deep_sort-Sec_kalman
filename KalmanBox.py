@@ -111,7 +111,7 @@ class KfBox:
         # self.predPoint_x2, self.predPoint_y2 = self.kf_p2.Update(x2, y2)
 
         self.age = 70
-        if (self.DetectTimes > 10):
+        if (self.DetectTimes > 15):
             self.IsShow = True
         else:
             self.DetectTimes += 1
