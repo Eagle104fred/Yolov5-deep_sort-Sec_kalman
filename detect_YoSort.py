@@ -218,7 +218,7 @@ class DetectYoSort:
                 # print('%sDone. (%.3fs)' % (s, t2 - t1))
 
                 # Stream results
-                view_img=True
+                #view_img=True
                 if view_img:
                     cv2.imshow(p, im0)
                     if cv2.waitKey(1) == ord('q'):  # q to quit

@@ -28,28 +28,14 @@ class KalmanBox:
             currentTime = time.time()
             for boxPred in self.predList:  # KS: 遍历卡尔曼list如果有旧的就更新
                 if (id == boxPred.id):
-
+                    # KS: 计算速度
                     meanX, meanY = self.meanSpeed.Count(currentTime, boxPred, x1, y1, x2, y2)
-
+                    #KS: 滤波
                     pred_xyxy = boxPred.Update(x1, y1, x2, y2, meanX, meanY)
-                    # pred_x1 = boxPred.predPoint_x1
-                    # pred_y1 = boxPred.predPoint_y1
-                    # pred_x2 = boxPred.predPoint_x2
-                    # pred_y2 = boxPred.predPoint_y2
-                    x1, y1, x2, y2 = [i for i in pred_xyxy]
-
-                    # KS: 过滤初始预测不准的情况(kalman的收敛过程的妥协)
-                    # if (abs(pred_x1 - x1) < 20):
-                    #     x1 = pred_x1
-                    # if (abs(pred_y1 - y1) < 20):
-                    #     y1 = pred_y1
-                    # if (abs(pred_x2 - x2) < 20):
-                    #     x2 = pred_x2
-                    # if (abs(pred_y2 - y2) < 20):
-                    #     y2 = pred_y2
+                    pred_x1, pred_y1, pred_x2, pred_y2 = [i for i in pred_xyxy]
 
                     if (boxPred.IsShow == True):  # KS: 只有经过一定的时间的卡尔曼才可以输出
-                        resultBoxes.append([x1, y1, x2, y2])
+                        resultBoxes.append([pred_x1, pred_y1, pred_x2, pred_y2])
                         resultId.append(id)
                     flag = False
 
@@ -111,8 +97,8 @@ class KfBox:
         self.oldMid = [0, 0]  # KS: 上一帧的框中点位置
 
         self.IsShow = False
-        self.DetectTimes = 0;
-        self.DetectMaxTimes = 0
+        self.DetectTimes = 0
+        self.DetectMaxTimes = 8#设置每个框过滤多少帧检测才显示
 
         self.TempCount=0
 
