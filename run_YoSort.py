@@ -15,8 +15,8 @@ if __name__ == '__main__':
     parser.add_argument('--weights', type=str,
                         default='yolov5/weights/2021.5.13_best.pt', help='model.pt path')  # yolov5检测模型
     # file/folder, 0 for webcam
-    parser.add_argument('--source', type=str,
-                        default='', help='source')  # 修改默认的检测源
+    parser.add_argument('--source', type=str,  # 修改默认的检测源
+                        default='../TrafficFlow/testVideo.mp4', help='source')
     parser.add_argument('--output', type=str, default='inference/output',
                         help='output folder')  # output folder
     parser.add_argument('--img-size', type=int, default=640,

@@ -129,7 +129,7 @@ class DetectYoSort:
                 """
                 KS:使用卡尔曼进行预测禁用yolo
                 """
-
+                #FlagKfPredict=True
                 if (FlagKfPredict == False):
                     kpCounter.status = "yolo"
 
@@ -181,10 +181,8 @@ class DetectYoSort:
 
                         # draw boxes for visualization
                         if len(outputs) > 0:
-                            # bbox_xyxy = outputs[:, :4]
-                            # identities = outputs[:, -3]
-                            temp_bbox = outputs[:, :4]
-                            temp_ids = outputs[:, -3]
+                            bbox_xyxy = outputs[:, :4]
+                            identities = outputs[:, -3]
                             out_clses = outputs[:, -2]
                             out_confs = outputs[:, -1]
 
@@ -192,7 +190,7 @@ class DetectYoSort:
                             KS:Kalman检测框滤波 
                             """
                             # self.meanSpeed.Count(time_synchronized(), temp_ids, temp_bbox)  # KS: 计算每个框的平均移动速度
-                            identities, bbox_xyxy = self.kfBoxes.Filter(temp_ids, temp_bbox)
+                            identities, bbox_xyxy = self.kfBoxes.Filter(identities, bbox_xyxy)
                             self.kfBoxes.UpdateAllAge()
 
                             # 画框
@@ -220,7 +218,7 @@ class DetectYoSort:
                 # print('%sDone. (%.3fs)' % (s, t2 - t1))
 
                 # Stream results
-
+                view_img=True
                 if view_img:
                     cv2.imshow(p, im0)
                     if cv2.waitKey(1) == ord('q'):  # q to quit

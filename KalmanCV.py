@@ -17,15 +17,19 @@ class KalmanFilter:
              [0, 0, 0, 0, 1, 0],
              [0, 0, 0, 0, 0, 1]], np.float32)
         self.kf.transitionMatrix = np.array(
-            [[1, 0, 0, 0, 1, 0], [0, 1, 0, 0, 0, 1], [0, 0, 1, 0, 1, 0], [0, 0, 0, 1, 0, 1],
+            [[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 0, 1, 0, 0],
              [0, 0, 0, 0, 1, 0],
              [0, 0, 0, 0, 0, 1]], np.float32)
         self.kf.processNoiseCov = np.array(
-            [[1, 0, 0, 0, 1, 0], [0, 1, 0, 0, 0, 1], [0, 0, 1, 0, 1, 0], [0, 0, 0, 1, 0,1], [0, 0, 0, 0, 1, 0],
-             [0, 0, 0, 0, 0, 1]], np.float32) *8
+            [[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 0, 1, 0, 0],
+             [0, 0, 0, 0, 1, 0],
+             [0, 0, 0, 0, 0, 1]], np.float32)*8
+           # [[1, 0, 0, 0, 0.5, 0], [0, 1, 0, 0, 0, 0.5], [0, 0, 1, 0,0.5, 0], [0, 0, 0, 1, 0,0.5], [0.5, 0,0.5, 0, 3, 0],[0, 0.5, 0, 0.5, 0, 3]], np.float32) *8
         self.kf.measurementNoiseCov = np.array(
-            [[1, 0, 0, 0, 0.5, 0], [0, 1, 0, 0, 0, 0.5], [0, 0, 1, 0, 0.5, 0], [0, 0, 0, 1, 0, 0.5], [0, 0, 0, 0, 3, 0],
-             [0, 0, 0, 0, 0, 3]], np.float32) * 30
+            [[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 0, 1, 0, 0],
+             [0, 0, 0, 0, 1, 0],
+             [0, 0, 0, 0, 0, 1]], np.float32) * 30
+           # [[1, 0, 0, 0, 0.5, 0], [0, 1, 0, 0, 0, 0.5], [0, 0, 1, 0, 0.5, 0], [0, 0, 0, 1, 0, 0.5],[0.5, 0, 0.5, 0, 3, 0],[0, 0.5, 0, 0.5, 0, 3]], np.float32) * 30
 
         # self.kf = cv2.KalmanFilter(4, 2)
         # self.kf.measurementMatrix = np.array([[1, 0, 0, 0], [0, 1, 0, 0]], np.float32)
@@ -44,7 +48,7 @@ class KalmanFilter:
     #     # print("kalmanPred: ", pred_x[0],pred_y[0])
     #
     #     return int(pred_x[0]), int(pred_y[0])
-    def Updatex2(self, x1, y1, x2, y2, meanX, meanY):
+    def Correctx2(self, x1, y1, x2, y2, meanX, meanY):
         """
         KS:滤波
         """
@@ -53,16 +57,13 @@ class KalmanFilter:
         self.kf.transitionMatrix[1][5]=self.deltaTime
         self.kf.transitionMatrix[2][4]=self.deltaTime
         self.kf.transitionMatrix[3][5]=self.deltaTime
+            #
 
         current_mes = np.array(
             [[np.float32(x1)], [np.float32(y1)], [np.float32(x2)], [np.float32(y2)], [np.float32(meanX)],
              [np.float32(meanY)]])
         self.kf.correct(current_mes)
-        current_pred = self.kf.predict()
-        pred_x1, pred_y1, pred_x2, pred_y2 = current_pred[0], current_pred[1], current_pred[2], current_pred[3]
-        # print("kalmanPred: ", pred_x[0],pred_y[0])
 
-        return int(pred_x1[0]), int(pred_y1[0]), int(pred_x2[0]), int(pred_y2[0])
 
     def Predictx2(self):
         # """

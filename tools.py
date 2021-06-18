@@ -1,6 +1,7 @@
 import cv2
 import psutil
 import os
+import cmath
 
 
 class Tools:
@@ -87,11 +88,12 @@ class Counter:
         self.yoloAge = 1
         self.maxAge = maxAge
         self.status = "yolo"
-
+        self.maxTimers=20
+        self.minTimers=1
     def Update(self):
         if (self.status == "yolo"):
             self.yoloAge -= 1
-            if (self.yoloAge >= 0):
+            if (self.yoloAge > 0):
                 return self.status
             else:
                 self.yoloAge = 1  # KS: reset
@@ -103,7 +105,7 @@ class Counter:
 
         elif (self.status == "kalman"):
             self.kalmanAge -= 1
-            if (self.kalmanAge >= 0):
+            if (self.kalmanAge > 0):
                 return self.status
             else:
                 self.kalmanAge = self.maxAge  # KS: reset
@@ -112,6 +114,18 @@ class Counter:
                 else:
                     self.status = "yolo"
                 return self.status
+
+    """
+    KS:动态调整检测频率 
+    """
+    def AdaptedTimes(self, boxesNumbers):
+        tempTimes = cmath.sqrt(self.maxTimers/boxesNumbers)
+        if(tempTimes>self.maxTimers):
+            tempTimes=self.maxTimers
+        elif(tempTimes<self.minTimers):
+            tempTimes=self.minTimers
+        return tempTimes
+
 
 
 class MeanSpeed:
@@ -125,15 +139,12 @@ class MeanSpeed:
 
         diffTime = currentTime - self.oldTime
 
-        oldMid=box.oldMid
-        meanX = (mid[0] - box.oldMid[0]) / diffTime
-        meanY = (mid[1] - box.oldMid[1]) / diffTime
-
+        diff_x=mid[0] - box.oldMid[0]
+        diff_y=mid[1] - box.oldMid[1]
+        meanX = diff_x / diffTime
+        meanY = diff_y / diffTime
+        #KS: 更新数据
         box.oldMid = mid
-        box.meanX = meanX
-        box.meanY = meanY
-        print("{0}meanSpeed:X:{1},Y:{2}".format(box.id, meanX, meanY))
 
-        #
-        # self.oldTime = currentTime
-        #
+        print("{0}meanSpeed:X:{1},Y:{2}".format(box.id, meanX, meanY))
+        return meanX,meanY
