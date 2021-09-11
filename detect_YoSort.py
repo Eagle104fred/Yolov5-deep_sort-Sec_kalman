@@ -25,8 +25,9 @@ from KalmanBox import KalmanBox
 class DetectYoSort:
     def __init__(self):
         self.tool = Tools()
-        self.kfBoxes = KalmanBox(maxAge=30)
+        self.kfBoxes = KalmanBox(maxAge=100)
         # self.meanSpeed = MeanSpeed(time.time())
+        self.oldT0=0;#上一帧的时间, 用于卡尔曼计算速度
 
     def run(self, opt, save_img=False):
         out, source, weights, view_img, save_txt, imgsz, pid, FlagKfPredict, KfP_Spacing = \
@@ -37,18 +38,13 @@ class DetectYoSort:
         # initialize deepsort
         cfg = get_config()
         cfg.merge_from_file(opt.config_deepsort)
-        # deepsort = DeepSort(cfg.DEEPSORT.REID_CKPT,
-        #                     max_dist=cfg.DEEPSORT.MAX_DIST, min_confidence=cfg.DEEPSORT.MIN_CONFIDENCE,
-        #                     nms_max_overlap=cfg.DEEPSORT.NMS_MAX_OVERLAP,
-        #                     max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
-        #                     max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
-        #                     use_cuda=True)
         deepsort = DeepSort(cfg.DEEPSORT.REID_CKPT,
                             max_dist=cfg.DEEPSORT.MAX_DIST, min_confidence=cfg.DEEPSORT.MIN_CONFIDENCE,
                             nms_max_overlap=cfg.DEEPSORT.NMS_MAX_OVERLAP,
                             max_iou_distance=cfg.DEEPSORT.MAX_IOU_DISTANCE,
-                            max_age=30, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
+                            max_age=cfg.DEEPSORT.MAX_AGE, n_init=cfg.DEEPSORT.N_INIT, nn_budget=cfg.DEEPSORT.NN_BUDGET,
                             use_cuda=True)
+
 
         # Initialize
         device = select_device(opt.device)
@@ -87,6 +83,9 @@ class DetectYoSort:
 
         # Run inference
         t0 = time.time()
+
+
+
         img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
         # run once
         _ = model(img.half() if half else img) if device.type != 'cpu' else None
@@ -96,7 +95,6 @@ class DetectYoSort:
 
         for frame_idx, (path, img, im0s, vid_cap) in enumerate(dataset):  # dataset存储的内容为：路径，resize+pad的图片，原始图片，视频对象
 
-            img = cv2.rectangle(img, (0, 0), (1920, 120), (255, 255, 255), -1)  # 过滤监控时间和名字,填成白色
             self.tool.CheckPID(pid)  # 检测上位机是否存活
 
             img = torch.from_numpy(img).to(device)
@@ -113,7 +111,8 @@ class DetectYoSort:
             pred = non_max_suppression(
                 pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
             t2 = time_synchronized()
-
+            print(t2 - self.oldT0)
+            self.oldT0 = t2
             # print("waste time:", t2 - t1)
             # Process detections
             udpIpc.SetUdpHead()
@@ -136,7 +135,7 @@ class DetectYoSort:
                 if (kpCounter.status == "kalman"):
                     kpCounter.Update()  # KS: 计数一定次数切换yolo
                     identities, bbox_xyxy = self.kfBoxes.Predict()  # KS: kalman预测不修正
-                    self.kfBoxes.UpdateAllAge()
+                    #self.kfBoxes.UpdateAllAge()
                     self.tool.draw_boxes_kalman(im0, bbox_xyxy, identities)
                     udpIpc.message_concat_Kalman(bbox_xyxy, identities)
 
@@ -178,7 +177,7 @@ class DetectYoSort:
 
                         # Pass detections to deepsort（deepsort主要功能实现）
                         outputs = deepsort.update(xywhs, confss, im0, labels)  # outputs为检测框预测序列
-
+                        cv2.imshow(p, im0)
                         # draw boxes for visualization
                         if len(outputs) > 0:
                             bbox_xyxy = outputs[:, :4]
@@ -191,7 +190,7 @@ class DetectYoSort:
                             """
                             # self.meanSpeed.Count(time_synchronized(), temp_ids, temp_bbox)  # KS: 计算每个框的平均移动速度
                             identities, bbox_xyxy = self.kfBoxes.Filter(identities, bbox_xyxy)
-                            self.kfBoxes.UpdateAllAge()
+                            #self.kfBoxes.UpdateAllAge()
 
                             # 画框
                             self.tool.draw_boxes_kalman(im0, bbox_xyxy, identities)
@@ -214,12 +213,14 @@ class DetectYoSort:
                     else:
                         deepsort.increment_ages()
 
+
                 # Print time (inference + NMS)
-                # print('%sDone. (%.3fs)' % (s, t2 - t1))
+                #print('%sDone. (%.3fs)' % (s, t2 - t1))
 
                 # Stream results
-                #view_img=True
+                view_img=True
                 if view_img:
+
                     cv2.imshow(p, im0)
                     if cv2.waitKey(1) == ord('q'):  # q to quit
                         raise StopIteration

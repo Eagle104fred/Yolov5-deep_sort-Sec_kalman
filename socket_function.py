@@ -62,10 +62,10 @@ class UDP_connect:
             id = int(identities[i]) if identities is not None else 0
 
             label = '{}{:d}'.format("", id)
-            cls = clses[i]
-            class_str = f'{names[int(cls)]}'
-            conf = confs[i]
-
+            #cls = clses[i]
+            class_str="ship"
+            #conf = confs[i]
+            conf=0
             text = str(id) + ':' + class_str + ':' + str(conf) + ':' + \
                    str(x1) + ':' + str(y1) + ':' + str(x2) + ':' + str(y2) + '|'
             self.send_message += text

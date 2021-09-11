@@ -308,12 +308,14 @@ class LoadStreams:  # multiple IP or RTSP cameras
     def __next__(self):
         self.count += 1
         img0 = self.imgs.copy()
+
         if cv2.waitKey(1) == ord('q'):  # q to quit
             cv2.destroyAllWindows()
             raise StopIteration
 
+        img = img0.copy()
         # Letterbox
-        img = [letterbox(x, new_shape=self.img_size, auto=self.rect)[0] for x in img0]
+        img = [letterbox(x, new_shape=self.img_size, auto=self.rect)[0] for x in img]
 
         # Stack
         img = np.stack(img, 0)

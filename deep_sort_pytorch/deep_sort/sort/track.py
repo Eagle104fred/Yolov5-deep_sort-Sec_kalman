@@ -110,7 +110,7 @@ class Track:
         ret[2:] = ret[:2] + ret[2:]
         return ret
 
-    def increment_age(self):#加血
+    def increment_age(self):#
         self.age += 1
         self.time_since_update += 1
 
