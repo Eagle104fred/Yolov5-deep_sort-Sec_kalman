@@ -11,7 +11,7 @@
 - 更新纯卡尔曼预测目标框, 减少检测消耗
   - > --kalman_predict开启功能 --kalmanPred_spacing 30 设置间隔帧数
 - 利用卡尔曼特性防止框id跳变
-- YOLOv5更新为v6.0版本
+- ### YOLOv5更新为v6.0版本
 
 
 # Introduction
