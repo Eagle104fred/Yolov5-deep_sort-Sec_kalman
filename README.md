@@ -10,7 +10,9 @@
 - 更新检测框的卡尔曼滤波使得框跳动减缓
 - 更新纯卡尔曼预测目标框, 减少检测消耗
   - > --kalman_predict开启功能 --kalmanPred_spacing 30 设置间隔帧数
-- ### 利用卡尔曼特性防止框id跳变(NEW!) 
+- 利用卡尔曼特性防止框id跳变
+- YOLOv5更新为v6.0版本
+
 
 # Introduction
 本项目修改自[mikel-brostrom的Yolov5_DeepSort_Pytorch](https://github.com/mikel-brostrom/Yolov5_DeepSort_Pytorch)主要针对船舶检测和追踪进行优化
