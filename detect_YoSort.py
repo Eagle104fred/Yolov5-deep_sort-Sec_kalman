@@ -4,7 +4,7 @@ sys.path.insert(0, './yolov5')
 
 from yolov5.utils.datasets import LoadImages, LoadStreams
 from yolov5.utils.general import check_img_size, non_max_suppression, scale_coords
-from yolov5.utils.torch_utils import select_device, time_synchronized
+from yolov5.utils.torch_utils import select_device, time_sync
 from deep_sort_pytorch.utils.parser import get_config
 from deep_sort_pytorch.deep_sort import DeepSort
 from socket_function import UDP_connect
@@ -93,7 +93,7 @@ class DetectYoSort:
         save_path = str(Path(out))
         txt_path = str(Path(out)) + '/results.txt'
 
-        for frame_idx, (path, img, im0s, vid_cap) in enumerate(dataset):  # dataset存储的内容为：路径，resize+pad的图片，原始图片，视频对象
+        for frame_idx, (path, img, im0s, vid_cap,temp) in enumerate(dataset):  # dataset存储的内容为：路径，resize+pad的图片，原始图片，视频对象
 
             self.tool.CheckPID(pid)  # 检测上位机是否存活
 
@@ -104,13 +104,13 @@ class DetectYoSort:
                 img = img.unsqueeze(0)
 
             # Inference
-            t1 = time_synchronized()
+            t1 = time_sync()
             pred = model(img, augment=opt.augment)[0]
 
             # Apply NMS
             pred = non_max_suppression(
                 pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
-            t2 = time_synchronized()
+            t2 = time_sync()
             print(t2 - self.oldT0)
             self.oldT0 = t2
             # print("waste time:", t2 - t1)
